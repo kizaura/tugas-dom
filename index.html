@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Latihan DOM</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script defer src="https://use.fontawesome.com/releases/v5.8.1/js/all.js" 
+    integrity="sha384-g5uSoOSBd7KkhAMlnQILrecXvzst9TdC09/VM+pjDTCM+1il8RHz5fKANTFFb+gQ" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-light bg-light">
+            <a class="navbar-brand">Mini Ecommerce</a>
+            <form class="form-inline" id="formItem">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" id="keyword" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="searchItem">Search</button>
+            </form>
+            <button class="btn btn-primary" id="cart"><i class="fas fa-shopping-cart"></i> (<span id="cartCount">0</span>)</button>
+        </nav>
+        <div class="row" id="listBarang">
+     
+        </div>
+        <div class="modal fade" id="cartModal" tabindex="-1" role="dialog" aria-labelledby="cartModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cartModalLabel">Keranjang Belanja</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="cartItems"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="checkout">Checkout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var items = [
+            ['001', 'Keyboard Logitek', 60000, 'Keyboard yang mantap untuk kantoran', 'images/logitek.jpg'], 
+            ['002', 'Keyboard MSI', 300000, 'Keyboard gaming MSI mekanik', 'images/msi.jpg'],
+            ['003', 'Mouse Genius', 50000, 'Mouse Genius biar lebih pinter', 'images/genius.jpg'],
+            ['004', 'Mouse Jerry', 30000, 'Mouse yang disukai kucing', 'images/jerry.jpg']
+        ];
+
+        var cart = [];
+        var cartCount = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderProducts();
+            document.getElementById('formItem').addEventListener('submit', function(e) {
+                e.preventDefault();
+                searchProducts();
+            });
+            document.getElementById('cart').addEventListener('click', function() {
+                $('#cartModal').modal('show');
+                renderCart();
+            });
+        });
+
+        function renderProducts() {
+            const listBarang = document.getElementById('listBarang');
+            listBarang.innerHTML = ''; // Clear existing products
+
+            items.forEach(function(item) {
+                var card = `
+                    <div class="col-4 mt-2">
+                        <div class="card" style="width: 18rem;">
+                            <img src="${item[4]}" class="card-img-top" height="200px" alt="${item[1]}">
+                            <div class="card-body">
+                                <h5 class="card-title">${item[1]}</h5>
+                                <p class="card-text">${item[3]}</p>
+                                <p class="card-text">Rp ${item[2].toLocaleString()}</p>
+                                <button class="btn btn-primary" onclick="addToCart('${item[0]}')">Tambahkan ke keranjang</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                listBarang.innerHTML += card;
+            });
+        }
+
+        function searchProducts() {
+            const keyword = document.getElementById('keyword').value.toLowerCase();
+            const filteredItems = items.filter(item => item[1].toLowerCase().includes(keyword));
+            const listBarang = document.getElementById('listBarang');
+            listBarang.innerHTML = ''; // Clear existing products
+
+            if (filteredItems.length > 0) {
+                filteredItems.forEach(function(item) {
+                    var card = `
+                        <div class="col-4 mt-2">
+                            <div class="card" style="width: 18rem;">
+                                <img src="${item[4]}" class="card-img-top" height="200px" alt="${item[1]}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${item[1]}</h5>
+                                    <p class="card-text">${item[3]}</p>
+                                    <p class="card-text">Rp ${item[2].toLocaleString()}</p>
+                                    <button class="btn btn-primary" onclick="addToCart('${item[0]}')">Tambahkan ke keranjang</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    listBarang.innerHTML += card;
+                });
+            } else {
+                listBarang.innerHTML = '<p class="text-center">Produk tidak ditemukan</p>';
+            }
+        }
+
+        function addToCart(productId) {
+            const product = items.find(item => item[0] === productId.toString());
+            if (product) {
+                cart.push(product);
+                cartCount++;
+                document.getElementById('cartCount').textContent = cartCount;
+                alert('Produk telah ditambahkan ke keranjang!');
+            }
+        }
+
+        function renderCart() {
+            const cartItemsDiv = document.getElementById('cartItems');
+            cartItemsDiv.innerHTML = '';
+            if (cart.length === 0) {
+                cartItemsDiv.innerHTML = '<p>Keranjang kosong</p>';
+            } else {
+                cart.forEach(function(item, index) {
+                    const cartItem = `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <p>${item[1]} - Rp ${item[2].toLocaleString()}</p>
+                            <button class="btn btn-danger btn-sm" onclick="removeFromCart(${index})">Hapus</button>
+                        </div>
+                    `;
+                    cartItemsDiv.innerHTML += cartItem;
+                });
+            }
+        }
+
+        function removeFromCart(index) {
+            if (index > -1) {
+                cart.splice(index, 1);
+                cartCount--;
+                document.getElementById('cartCount').textContent = cartCount;
+                renderCart();
+            }
+        }
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" 
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
